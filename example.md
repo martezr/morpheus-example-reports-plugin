@@ -76,19 +76,26 @@ Before we can use the plugin, we need to upload the plugin to our Morpheus insta
 
 ### Generating a report
 
-Now that the plugin has been installed were (Operations > Reports > Cypher Summary)
-
-Click **RUN NOW** to the right of the **CYPHER SUMMARY** report to generate a new report.
+Now that the plugin has been installed we are ready to generate a report using the custom report plugin. Locate the **CYPHER SUMMARY** report in the **Reports** subsection of the **Operations** section in the Moprheus UI. Click **RUN NOW** to the right of the **CYPHER SUMMARY** report to generate a new report.
 
 ![](_images/morpheus_reports.png)
 
-The
+Once the report has been generated the report status will change to **Ready** and the report can be viewed by clicking on the blue name link underneath the **FILTERS** column.
+
+![](/Users/martezreed/mopho-demo-plugin/_images/morpheus_report_results.png)
+
+The report will show the breakdown of Cypher items by type as well as a basic table of the items sorted by alphabetical order.
 
 ![](_images/morpheus_sample_report_results.png)
 
+We have now successfully walked through the steps to build and use the Morpheus custom report sample plugin.
+
 ## Creating a Morpheus custom report plugin
 
+In the previous section we walked through how to use the custom report sample plugin and now we'll go through creating the plugin from scratch to understand the custom report plugin development process.
+
 #### Accessing the Morpheus Database
+
 The MySQL database listens on the host's loopback address for a single node AIO installation by default. This means that we have to connect to the database using the MySQL client locally or use a feature like SSH proxying with MySQL Workbench.
 
 **Morpheus Database Credentials**
@@ -220,13 +227,15 @@ The SQL query should generate a list of entries in the table similar to that dis
 
 
 
-## Developing a Morpheus plugin
+## Developing the custom report plugin
 
-
+Now that we know the table in the database and fields that we want to use for our report we're ready to start writing some code. The first thing we'll need to do is create a directory for our plugin.
 
 ```bash
 mkdir example-report-plugin
 ```
+
+With the directory created let's take a look at the directory structure that we'll create before we jump right into writing the code.
 
 ### File structure
 
@@ -313,7 +322,7 @@ class ReportsPlugin extends Plugin {
 }
 ```
 
-### Create the plugin
+## Create the Plugin Class
 
 
 
@@ -375,29 +384,13 @@ class CustomReportProvider extends AbstractReportProvider {
 		 return ServiceResponse.success()
 	 }
 
-
 	@Override
 	HTMLResponse renderTemplate(ReportResult reportResult, Map<String, List<ReportResultRow>> reportRowsBySection) {
 		ViewModel<String> model = new ViewModel<String>()
 		model.object = reportRowsBySection
 		getRenderer().renderTemplate("hbs/instanceReport", model)
 	}
-
-	/**
-	 * Allows various sources used in the template to be loaded
-	 * @return
-	 */
-	@Override
-	ContentSecurityPolicy getContentSecurityPolicy() {
-		def csp = new ContentSecurityPolicy()
-		csp.scriptSrc = '*.jsdelivr.net'
-		csp.frameSrc = '*.digitalocean.com'
-		csp.imgSrc = '*.wikimedia.org'
-		csp.styleSrc = 'https: *.bootstrapcdn.com'
-		csp
-	}
-
-
+ 
 	void process(ReportResult reportResult) {
 		// Update the status of the report (generating) - https://developer.morpheusdata.com/api/com/morpheusdata/model/ReportResult.Status.html
 		morpheus.report.updateReportResultStatus(reportResult,ReportResult.Status.generating).blockingGet();
@@ -416,12 +409,7 @@ class CustomReportProvider extends AbstractReportProvider {
 			// Create a read-only database connection
 			dbConnection = morpheus.report.getReadOnlyDatabaseConnection().blockingGet()
 			// Evaluate if a search filter or phrase has been defined
-			if(reportResult.configMap?.phrase) {
-				String phraseMatch = "${reportResult.configMap?.phrase}%"
-				results = new Sql(dbConnection).rows("SELECT item_key,last_updated,last_accessed,lease_timeout from cypher_item WHERE item_key LIKE ${phraseMatch} order by item_key asc;")
-			} else {
 				results = new Sql(dbConnection).rows("SELECT item_key,last_updated,last_accessed,lease_timeout from cypher_item order by item_key asc;")
-			}
 	    // Close the database connection
 		} finally {
 			morpheus.report.releaseDatabaseConnection(dbConnection)
@@ -434,21 +422,27 @@ class CustomReportProvider extends AbstractReportProvider {
 			ReportResultRow resultRowRecord = new ReportResultRow(section: ReportResultRow.SECTION_MAIN, displayOrder: displayOrder++, dataMap: data)
 			log.info("resultRowRecord: ${resultRowRecord.dump()}")
 			totalItems++
+      // Evaluate if the cypher item starts with password
 			if (resultRow.item_key.startsWith('password')) {
 				passwordResults++
 			}
+      // Evaluate if the cypher item starts with tfvars
 			if (resultRow.item_key.startsWith('tfvars')) {
 				tfvarsResults++
 			}
+      // Evaluate if the cypher item starts with secret
 			if (resultRow.item_key.startsWith('secret')) {
 				secretResults++
 			}
+      // Evaluate if the cypher item starts with uuid
 			if (resultRow.item_key.startsWith('uuid')) {
 				uuidResults++
 			}
+      // Evaluate if the cypher item starts with key
 			if (resultRow.item_key.startsWith('key')) {
 				keyResults++
 			}
+      // Evaluate if the cypher item starts with random
 			if (resultRow.item_key.startsWith('random')) {
 				randomResults++
 			}
@@ -472,7 +466,7 @@ class CustomReportProvider extends AbstractReportProvider {
 		 return "View an inventory of Cypher items"
 	 }
 
-	// The category of the custom report
+	 // The category of the custom report
 	 @Override
 	 String getCategory() {
 		 return 'inventory'
@@ -492,18 +486,12 @@ class CustomReportProvider extends AbstractReportProvider {
 	 Boolean getSupportsAllZoneTypes() {
 		 return true
 	 }
-
-	// https://developer.morpheusdata.com/api/com/morpheusdata/model/OptionType.html
-	 @Override
-	 List<OptionType> getOptionTypes() {
-		 [new OptionType(code: 'status-report-search', name: 'Search', fieldName: 'phrase', fieldContext: 'config', fieldLabel: 'Search Phrase', displayOrder: 0)]
-	 }
  }
 ```
 
 
 
-### Report User Interface
+## Create the report user interface
 
 
 
@@ -564,7 +552,7 @@ class CustomReportProvider extends AbstractReportProvider {
 </div>
 ```
 
-
+We should now have a fully functional custom report plugin that we can build and add to our deployment of Morpheus.
 
 ## Additional Resources
 
