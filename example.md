@@ -174,7 +174,7 @@ The `SHOW TABLES` command should output the list of tables in the morpheus datab
 
 ```
 
-In this example the table that we want to use is the **cypher_items** database table which contains the cypher items. Now that we have the table that we want to use we need to know what field are available in the table.
+In this example the table that we want to use is the **cypher_item** database table which contains the cypher items. Now that we have the table that we want to use we need to know what field are available in the table.
 
 ```sql
 select COLUMN_NAME,DATA_TYPE from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='cypher_item';
@@ -205,7 +205,7 @@ The SQL query should display a list of the fields in the **cypher_items** table 
 Now that know the fields that are available in the table we're ready to create a SQL statement to query database for the value of the fields that we're interested in. In our example the fields that we're interested in are the item_key, last_update, last_accessed and least_timeout fields.
 
 ```sql
-SELECT item_key,last_updated,last_accessed,lease_timeout from cypher_item order by item_key asc
+SELECT item_key,last_updated,last_accessed,lease_timeout from cypher_item order by item_key asc;
 ```
 
 The SQL query should generate a list of entries in the table similar to that displayed below.
