@@ -239,13 +239,13 @@ With the directory created let's take a look at the directory structure that we'
 
 ### File structure
 
-| Name                        | Description                                              | Path                                                         |
-| --------------------------- | -------------------------------------------------------- | ------------------------------------------------------------ |
-| build.gradle                | The gradle build file                                    | build.gradle                                                 |
-| gradle.properties           | This file is a properties file for the Gradle build tool | gradle.properties                                            |
-| CustomReportProvider.groovy |                                                          | src/main/com/morpheusdata/reports/CustomReportProvider.groovy |
-| ReportsPlugin.groovy        |                                                          | src/main/com/morpheusdata/reports/ReportsPlugin.groovy       |
-| cypherReport.hbs            | This file is the UI component of the custom report       | src/mainresources/renderer/hbs/cypherReport.hbs              |
+| Name                        | Description                                              | Path                                                                 |
+| --------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------- |
+| build.gradle                | The gradle build file                                    | build.gradle                                                         |
+| gradle.properties           | This file is a properties file for the Gradle build tool | gradle.properties                                                    |
+| CustomReportProvider.groovy |                                                          | src/main/groovy/com/morpheusdata/reports/CustomReportProvider.groovy |
+| ReportsPlugin.groovy        |                                                          | src/main/groovy/com/morpheusdata/reports/ReportsPlugin.groovy        |
+| cypherReport.hbs            | This file is the UI component of the custom report       | src/mainresources/renderer/hbs/cypherReport.hbs                      |
 
 ## Create a build.gradle file
 
@@ -265,8 +265,8 @@ apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
 
-group = ${'com.example'}
-version = ${'1.2.2'}
+group = 'com.example'
+version = '1.2.2'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -322,7 +322,7 @@ class ReportsPlugin extends Plugin {
 }
 ```
 
-## Create the Plugin Class
+## Create the Report Provider Class
 
 
 
