@@ -15,8 +15,6 @@ import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.util.logging.Slf4j
 import io.reactivex.Observable;
-import java.util.Date
-
 import java.sql.Connection
 
 @Slf4j
@@ -58,23 +56,14 @@ class CustomReportProvider extends AbstractReportProvider {
 	HTMLResponse renderTemplate(ReportResult reportResult, Map<String, List<ReportResultRow>> reportRowsBySection) {
 		ViewModel<String> model = new ViewModel<String>()
 		model.object = reportRowsBySection
-		getRenderer().renderTemplate("hbs/instanceReport", model)
+		getRenderer().renderTemplate("hbs/customReport", model)
 	}
 
-	/**
-	 * Allows various sources used in the template to be loaded
-	 * @return
-	 */
 	@Override
 	ContentSecurityPolicy getContentSecurityPolicy() {
 		def csp = new ContentSecurityPolicy()
-		csp.scriptSrc = '*.jsdelivr.net'
-		csp.frameSrc = '*.digitalocean.com'
-		csp.imgSrc = '*.wikimedia.org'
-		csp.styleSrc = 'https: *.bootstrapcdn.com'
 		csp
 	}
-
 
 	void process(ReportResult reportResult) {
 		// Update the status of the report (generating) - https://developer.morpheusdata.com/api/com/morpheusdata/model/ReportResult.Status.html
@@ -90,19 +79,13 @@ class CustomReportProvider extends AbstractReportProvider {
 		Long randomResults = 0
 		Long totalItems = 0
 
-		
 		try {
 			// Create a read-only database connection
 			dbConnection = morpheus.report.getReadOnlyDatabaseConnection().blockingGet()
-			// Evaluate if a search filter or phrase has been defined
-			if(reportResult.configMap?.phrase) {
-				String phraseMatch = "${reportResult.configMap?.phrase}%"
-				results = new Sql(dbConnection).rows("SELECT item_key,last_updated,last_accessed,lease_timeout from cypher_item WHERE item_key LIKE ${phraseMatch} order by item_key asc;")
-			} else {
-				results = new Sql(dbConnection).rows("SELECT item_key,last_updated,last_accessed,lease_timeout from cypher_item order by item_key asc;")
-			}
-	    // Close the database connection
+			// Query the cypher_item table for all items
+			results = new Sql(dbConnection).rows("SELECT item_key,last_updated,last_accessed,lease_timeout from cypher_item order by item_key asc;")
 		} finally {
+			// Close the database connection
 			morpheus.report.releaseDatabaseConnection(dbConnection)
 		}
 		log.info("Results: ${results}")
@@ -112,35 +95,66 @@ class CustomReportProvider extends AbstractReportProvider {
 			Map<String,Object> data = [key: resultRow.item_key, last_updated: resultRow.last_updated.toString(), last_accessed: resultRow.last_accessed.toString(), lease_timeout: resultRow.lease_timeout ]
 			ReportResultRow resultRowRecord = new ReportResultRow(section: ReportResultRow.SECTION_MAIN, displayOrder: displayOrder++, dataMap: data)
 			log.info("resultRowRecord: ${resultRowRecord.dump()}")
+			
+			// Increment the total cypher items count by 1
 			totalItems++
+
+			// Evaluate if the item_key column starts with password
+			// and increment the password results count by 1
 			if (resultRow.item_key.startsWith('password')) {
 				passwordResults++
 			}
+
+			// Evaluate if the item_key column starts with tfvars
+			// and increment the tfvars results count by 1
 			if (resultRow.item_key.startsWith('tfvars')) {
 				tfvarsResults++
 			}
+
+			// Evaluate if the item_key column starts with secret
+			// and increment the secret results count by 1
 			if (resultRow.item_key.startsWith('secret')) {
 				secretResults++
 			}
+
+			// Evaluate if the item_key column starts with uuid
+			// and increment the uuid results count by 1
 			if (resultRow.item_key.startsWith('uuid')) {
 				uuidResults++
 			}
+
+			// Evaluate if the item_key column starts with key
+			// and increment the key results count by 1
 			if (resultRow.item_key.startsWith('key')) {
 				keyResults++
 			}
+
+			// Evaluate if the item_key column starts with random
+			// and increment the random results count by 1
 			if (resultRow.item_key.startsWith('random')) {
 				randomResults++
 			}
+
+
 			return resultRowRecord
 		}.buffer(50).doOnComplete {
+			// Update the report status to "ready" upon successfully interating through all the records
 			morpheus.report.updateReportResultStatus(reportResult,ReportResult.Status.ready).blockingGet();
 		}.doOnError { Throwable t ->
+			// Update the report status to "failed" if there is an error in interating through all the records
 			morpheus.report.updateReportResultStatus(reportResult,ReportResult.Status.failed).blockingGet();
 		}.subscribe {resultRows ->
+			// Append the resultRowRecord to the report data payload
 			morpheus.report.appendResultRows(reportResult,resultRows).blockingGet()
 		}
-		Map<String,Object> data = [total_items: totalItems, password_items: passwordResults, tfvars_items: tfvarsResults, secret_items: secretResults, uuid_items: uuidResults, key_items: keyResults, random_items: randomResults]
-		ReportResultRow resultRowRecord = new ReportResultRow(section: ReportResultRow.SECTION_HEADER, displayOrder: displayOrder++, dataMap: data)
+
+		// Create a data map to hold the header result data
+		Map<String,Object> headerData = [total_items: totalItems, password_items: passwordResults, tfvars_items: tfvarsResults, secret_items: secretResults, uuid_items: uuidResults, key_items: keyResults, random_items: randomResults]
+
+		// Create a new result row record for the header using the data from the headerData
+		ReportResultRow resultRowRecord = new ReportResultRow(section: ReportResultRow.SECTION_HEADER, displayOrder: displayOrder++, dataMap: headerData)
+
+		// Append the header resultRowRecord to the report data
         morpheus.report.appendResultRows(reportResult,[resultRowRecord]).blockingGet()
 	}
 
@@ -174,7 +188,5 @@ class CustomReportProvider extends AbstractReportProvider {
 
 	// https://developer.morpheusdata.com/api/com/morpheusdata/model/OptionType.html
 	 @Override
-	 List<OptionType> getOptionTypes() {
-		 [new OptionType(code: 'status-report-search', name: 'Search', fieldName: 'phrase', fieldContext: 'config', fieldLabel: 'Search Phrase', displayOrder: 0)]
-	 }
+	 List<OptionType> getOptionTypes() {}
  }
