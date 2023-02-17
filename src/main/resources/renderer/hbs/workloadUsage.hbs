@@ -1,0 +1,181 @@
+<div id="hypervisor-inventory-report">
+  <script nonce="{{webnonce}}" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script nonce="{{webnonce}}" type="text/javascript">
+    // Load the Visualization API and the corechart package.
+    google.charts.load('current', {'packages':['corechart']});
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.charts.setOnLoadCallback(drawChart);
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and draws it.
+    function drawChart() {
+      var inputData = '{{ reportdata.header.0.dataMap.discoveredJson }}'
+      data = inputData.replace(/&quot;/g, '"')
+      var discoveryData = JSON.parse(data)
+      // Create the data table.
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Discovered');
+      data.addColumn('number', 'Count');
+      data.addRows([
+        [discoveryData[0]['name'], discoveryData[0]['value']],
+        [discoveryData[1]['name'], discoveryData[1]['value']],
+      ]);
+      // Set chart options
+      var options = {'legend': 'none'};
+      // Instantiate and draw our chart, passing in some options.
+      var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+      chart.draw(data, options);
+    }
+  </script>
+  <script nonce="{{webnonce}}" type="text/javascript">
+    // Load the Visualization API and the corechart package.
+    google.charts.load('current', {'packages':['corechart']});
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.charts.setOnLoadCallback(drawAccountsChart);
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and draws it.
+    function drawAccountsChart() {
+      var inputData = '{{ reportdata.header.0.dataMap.accountsJson }}'
+      data = inputData.replace(/&quot;/g, '"')
+      var accountData = JSON.parse(data)
+      // Create the data table.
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Tenant');
+      data.addColumn('number', 'Count');
+      for (var i = 0; i < accountData.length; i++){
+        data.addRow([accountData[i]['name'], accountData[i]['count']])
+      }
+
+      // Set chart options
+      var options = {'legend': 'none'};
+      // Instantiate and draw our chart, passing in some options.
+      var chart = new google.visualization.PieChart(document.getElementById('tenant_chart_div'));
+      chart.draw(data, options);
+  
+    }
+  </script>
+  <script nonce="{{webnonce}}" type="text/javascript">
+    // Load the Visualization API and the corechart package.
+    google.charts.load('current', {'packages':['corechart']});
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.charts.setOnLoadCallback(drawCloudsChart);
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and draws it.
+    function drawCloudsChart() {
+      var inputData = '{{ reportdata.header.0.dataMap.cloudsJson }}'
+      data = inputData.replace(/&quot;/g, '"')
+      var cloudData = JSON.parse(data)
+      // Create the data table.
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Cloud');
+      data.addColumn('number', 'Count');
+      for (var i = 0; i < cloudData.length; i++){
+        data.addRow([cloudData[i]['name'], cloudData[i]['count']])
+      }
+
+      // Set chart options
+      var options = {'legend': 'none'};
+
+      // Instantiate and draw our chart, passing in some options.
+      var chart = new google.visualization.PieChart(document.getElementById('cloud_chart_div'));
+      chart.draw(data, options);
+    }
+  </script>
+
+  <div class="break-container intro-stats">
+      <div class="count-stats">
+          <div class="stats-container">
+              <span class="big-stat">
+                  {{ reportdata.header.0.dataMap.totalWorkloads }}
+              </span>
+              <div class="stat-label">Workloads</div>
+          </div>
+      </div>
+  </div>
+
+  <div class="analytics-data-view">
+    <div class="row break-container auto-google-chart">
+      <div class="col-sm-4">
+        <div class="buffer-container">
+        <h3 class="center">WLE Usage By Discovery Status</h3>
+        <div id="chart_div"></div>
+          <table class="chart-legent-table">
+            <thead>
+            </thead>
+            <tbody>	
+              {{#each reportdata.header.0.dataMap.discoveredPayload}}
+                <tr>
+                  <td class="legend-cell">
+                    <div style="background-color:{{color}};"></div>
+                  </td>
+                  <td>{{name}}</td>
+                  <td>{{value}}</td>
+                </tr>
+              {{/each}}						
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="buffer-container">
+        <h3 class="center">WLE Usage By Tenant</h3>
+        <div id="tenant_chart_div"></div>
+          <table class="chart-legent-table">
+            <thead>
+            </thead>
+            <tbody>	
+              {{#each reportdata.header.0.dataMap.accountsPayload}}
+                <tr>
+                  <td>{{name}}</td>
+                  <td>{{count}}</td>
+                </tr>
+              {{/each}}						
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="buffer-container">
+        <h3 class="center">WLE Usage By Cloud</h3>
+        <div id="cloud_chart_div"></div>
+          <table class="chart-legent-table">
+            <thead>
+            </thead>
+            <tbody>	
+              {{#each reportdata.header.0.dataMap.cloudsPayload}}
+                <tr>
+                  <td>{{name}}</td>
+                  <td>{{count}}</td>
+                </tr>
+              {{/each}}						
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+  <h2>Tenants</h2>
+
+  {{#each reportdata.header.0.dataMap.serverPayload}}
+    <div class="resource-detail zone-summary">
+        <div class="summary-collapsible-row" style="margin-bottom: 0px; padding: 0px;">
+          <div collapsible="" class="detail-title summary-title-row collapsed">
+              <div class="name-block">
+                <span class="name">{{this.name}}</span>
+              </div>
+      <div class="stats-block">
+          <div class="stat-container-wide">
+            {{this.count}}
+            <div class="stat-label">Workloads</div>
+          </div>
+        </div>
+          </div>
+          <div class="summary-content-row">
+              <div class="zone-summary-container">
+              </div>
+          </div>
+        </div>
+    </div>
+  {{/each}}
+  </div>
+</div>

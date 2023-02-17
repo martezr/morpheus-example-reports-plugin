@@ -6,6 +6,11 @@ import com.morpheusdata.model.Permission
 class ReportsPlugin extends Plugin {
 
 	@Override
+	String getCode() {
+		return 'custom-report-example'
+	}
+
+	@Override
 	void initialize() {
 		this.setName("Custom Cypher Report")
 		this.setDescription("A custom report plugin for cypher items")
@@ -14,6 +19,10 @@ class ReportsPlugin extends Plugin {
 		this.setIssueTrackerUrl("https://github.com/martezr/morpheus-example-reports-plugin/issues")
 		CustomReportProvider customReportProvider = new CustomReportProvider(this, morpheus)
 		this.pluginProviders.put(customReportProvider.code, customReportProvider)
+		RestApiReportProvider restApiReportProvider = new RestApiReportProvider(this, morpheus)
+		this.pluginProviders.put(restApiReportProvider.code, restApiReportProvider)
+		WorkloadUsageReportProvider workloadUsageReportProvider = new WorkloadUsageReportProvider(this, morpheus)
+		this.pluginProviders.put(workloadUsageReportProvider.code, workloadUsageReportProvider)
 	}
 
 	@Override

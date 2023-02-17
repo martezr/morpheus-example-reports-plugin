@@ -1,54 +1,54 @@
 <div id="hypervisor-inventory-report">
-<div class="intro-stats">
-<h2>Overview</h2>
-<div class="count-stats">
-	<div class="stats-container">
-		<span class="big-stat">{{ header.0.dataMap.total_items }}</span>
-		<span class="stat-label">Items</span>
+	<div class="intro-stats">
+		<h2>Overview</h2>
+		<div class="count-stats">
+			<div class="stats-container">
+				<span class="big-stat">{{ header.0.dataMap.total_items }}</span>
+				<span class="stat-label">Items</span>
+			</div>
+			<div class="stats-container">
+				<span class="big-stat">{{ header.0.dataMap.password_items }}</span>
+				<div class="stat-label">Password</div>
+			</div>
+			<div class="stats-container">
+				<span class="big-stat">{{ header.0.dataMap.tfvars_items }}</span>
+				<div class="stat-label">TF Vars</div>
+			</div>
+			<div class="stats-container">
+				<span class="big-stat">{{ header.0.dataMap.secret_items }}</span>
+				<div class="stat-label">Secret</div>
+			</div>
+			<div class="stats-container">
+				<span class="big-stat">{{ header.0.dataMap.uuid_items }}</span>
+				<div class="stat-label">UUID</div>
+			</div>
+			<div class="stats-container">
+				<span class="big-stat">{{ header.0.dataMap.key_items }}</span>
+				<div class="stat-label">Key</div>
+			</div>
+			<div class="stats-container">
+				<span class="big-stat">{{ header.0.dataMap.random_items }}</span>
+				<div class="stat-label">Random</div>
+			</div>
+		</div>
 	</div>
-	<div class="stats-container">
-		<span class="big-stat">{{ header.0.dataMap.password_items }}</span>
-		<div class="stat-label">Password</div>
-	</div>
-	<div class="stats-container">
-		<span class="big-stat">{{ header.0.dataMap.tfvars_items }}</span>
-		<div class="stat-label">TF Vars</div>
-	</div>
-	<div class="stats-container">
-		<span class="big-stat">{{ header.0.dataMap.secret_items }}</span>
-		<div class="stat-label">Secret</div>
-	</div>
-	<div class="stats-container">
-		<span class="big-stat">{{ header.0.dataMap.uuid_items }}</span>
-		<div class="stat-label">UUID</div>
-	</div>
-	<div class="stats-container">
-		<span class="big-stat">{{ header.0.dataMap.key_items }}</span>
-		<div class="stat-label">Key</div>
-	</div>
-	<div class="stats-container">
-		<span class="big-stat">{{ header.0.dataMap.random_items }}</span>
-		<div class="stat-label">Random</div>
-	</div>
-</div>
-</div>
-<h2>Cypher Items</h2>
-<table>
-	<thead>
-	<th>Key</th>
-	<th>Last Updated</th>
-	<th>Last Accessed</th>
-	<th>Lease Timeout</th>
-	</thead>
-	<tbody>
-		{{#each main}}
-			<tr>
-				<td>{{dataMap.key}}</td>
-				<td>{{dataMap.last_updated}}</td>
-				<td>{{dataMap.last_accessed}}</td>
-				<td>{{dataMap.lease_timeout}}</td>
-			</tr>
-		{{/each}}
-	</tbody>
-</table>
+	<h2>Cypher Items</h2>
+	<table>
+		<thead>
+		<th>Key</th>
+		<th>Last Updated</th>
+		<th>Last Accessed</th>
+		<th>Lease Timeout</th>
+		</thead>
+		<tbody>
+			{{#each main}}
+				<tr>
+					<td>{{dataMap.key}}</td>
+					<td>{{dataMap.last_updated}}</td>
+					<td>{{dataMap.last_accessed}}</td>
+					<td>{{dataMap.lease_timeout}}</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
 </div>

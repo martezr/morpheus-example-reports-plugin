@@ -1,0 +1,24 @@
+<div id="hypervisor-inventory-report">
+	<div class="intro-stats">
+    <h2>Overview</h2>
+    </div>
+	<h2>API Example</h2>
+	<table>
+		<thead>
+		<th>User ID</th>
+		<th>ID</th>
+		<th>Title</th>
+		<th>Body</th>
+		</thead>
+		<tbody>
+			{{#each main}}
+				<tr>
+					<td>{{dataMap.userId}}</td>
+					<td>{{dataMap.id}}</td>
+					<td>{{dataMap.title}}</td>
+					<td>{{dataMap.body}}</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
+</div>
