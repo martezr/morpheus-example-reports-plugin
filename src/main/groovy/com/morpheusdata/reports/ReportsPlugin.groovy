@@ -21,6 +21,8 @@ class ReportsPlugin extends Plugin {
 		this.pluginProviders.put(customReportProvider.code, customReportProvider)
 		RestApiReportProvider restApiReportProvider = new RestApiReportProvider(this, morpheus)
 		this.pluginProviders.put(restApiReportProvider.code, restApiReportProvider)
+		UserProvisioningHistoryReportProvider userProvisioningHistoryReportProvider = new UserProvisioningHistoryReportProvider(this, morpheus)
+		this.pluginProviders.put(userProvisioningHistoryReportProvider.code, userProvisioningHistoryReportProvider)
 		WorkloadUsageReportProvider workloadUsageReportProvider = new WorkloadUsageReportProvider(this, morpheus)
 		this.pluginProviders.put(workloadUsageReportProvider.code, workloadUsageReportProvider)
 	}

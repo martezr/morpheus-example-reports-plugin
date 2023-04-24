@@ -1,0 +1,145 @@
+<div id="hypervisor-inventory-report">
+  <script nonce="{{webnonce}}" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script nonce="{{webnonce}}" type="text/javascript">
+    // Load the Visualization API and the corechart package.
+    google.charts.load('current', {'packages':['corechart']});
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.charts.setOnLoadCallback(drawChart);
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and draws it.
+    function drawChart() {
+		var inputData = '{{ reportdata.main.0.dataMap.userJson }}'
+      	formatData = inputData.replace(/&quot;/g, '"')
+      	var userData = JSON.parse(formatData)
+		console.log(userData)
+		var data = new google.visualization.DataTable();
+		data.addColumn('string','Month')
+		var monthName = new Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+		var d = new Date();
+		var monthList = []
+		d.setDate(1);
+		for (i=0; i<=11; i++) {
+			//monthList.push(monthName[d.getMonth()] + '-' + d.getFullYear())
+			monthList.push(d.getMonth() + 1 + '-' + d.getFullYear())
+			d.setMonth(d.getMonth() - 1);
+		}
+
+		monthList = monthList.reverse()
+
+		var month1Row = []
+		var month2Row = []
+		var month3Row = []
+		var month4Row = []
+		var month5Row = []
+		var month6Row = []
+		var month7Row = []
+		var month8Row = []
+		var month9Row = []
+		var month10Row = []
+		var month11Row = []
+		var month12Row = []
+
+		for (var i = 0; i < monthList.length; i++){
+			switch(i) {
+				case 0:
+					month1Row.push(monthList[i])
+					break;
+				case 1:
+					month2Row.push(monthList[i])
+					break;
+				case 2:
+					month3Row.push(monthList[i])
+					break;
+				case 3:
+					month4Row.push(monthList[i])
+					break;
+				case 4:
+					month5Row.push(monthList[i])
+					break;
+				case 5:
+					month6Row.push(monthList[i])
+					break;
+				case 6:
+					month7Row.push(monthList[i])
+					break;
+				case 7:
+					month8Row.push(monthList[i])
+					break;
+				case 8:
+					month9Row.push(monthList[i])
+					break;
+				case 9:
+					month10Row.push(monthList[i])
+					break;
+				case 10:
+					month11Row.push(monthList[i])
+					break;
+				case 11:
+					month12Row.push(monthList[i])
+					break;
+			}
+		}
+
+		//data.addRow(['Username', 'Month1','Month2','Month3','Month4','Month5','Month6','Month7','Month8','Month9','Month10','Month11','Month12'])
+		for (var i = 0; i < userData.length; i++){
+			data.addColumn('number',userData[i]['username'])
+			month1Row.push(userData[i]['month1'])
+			month2Row.push(userData[i]['month2'])
+			month3Row.push(userData[i]['month3'])
+			month4Row.push(userData[i]['month4'])
+			month5Row.push(userData[i]['month5'])
+			month6Row.push(userData[i]['month6'])
+			month7Row.push(userData[i]["month7"])
+			month8Row.push(userData[i]["month8"])
+			month9Row.push(userData[i]["month9"])
+			month10Row.push(userData[i]["month10"])
+			month11Row.push(userData[i]["month11"])
+			month12Row.push(userData[i]["month12"])
+		}
+		console.log(month1Row)
+		data.addRow(month1Row)
+		data.addRow(month2Row)
+		data.addRow(month3Row)
+		data.addRow(month4Row)
+		data.addRow(month5Row)
+		data.addRow(month6Row)
+		data.addRow(month7Row)
+		data.addRow(month8Row)
+		data.addRow(month9Row)
+		data.addRow(month10Row)
+		data.addRow(month11Row)
+		data.addRow(month12Row)
+
+        var options = {
+          title: 'Provisioning History',
+          hAxis: {title: 'Month',  titleTextStyle: {color: '#333'}},
+          vAxis: {minValue: 0}
+        };
+
+        var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+  </script>
+	<div class="intro-stats">
+		<h2>Overview</h2>
+		        <div id="chart_div"></div>
+	</div>
+	<table>
+		<thead>
+			<th>Username</th>
+			{{#each reportdata.main.0.dataMap.months as |month|}}
+			<th>{{month}}</th>
+			{{/each}}
+			<th>Total</th>
+		</thead>
+		<tbody>
+		{{#each reportdata.main.0.dataMap.output}}
+			<tr>
+			{{#each this}}
+				<td>{{this}}</td>
+			{{/each}}
+			</tr>
+		{{/each}}
+		</tbody>
+	</table>
+</div>
