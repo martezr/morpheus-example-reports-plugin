@@ -85,6 +85,7 @@ class UserProvisioningHistoryReportProvider extends AbstractReportProvider {
         //def usersPayload = [:].withDefault {}
         def usersPayload = []
         def outputPayload = []
+        def sanitizedOutput = []
 		Connection dbConnection
 
         LocalDate now = LocalDate.now(); // 2015-11-24
@@ -153,12 +154,19 @@ class UserProvisioningHistoryReportProvider extends AbstractReportProvider {
             emptyMap["total"] = total
             outputPayload << emptyMap
         }
-        def sortedAccounts = outputPayload.sort { -it.total }
+
+
+        def sortedPayload = outputPayload.sort { -it.total }
+        sortedPayload.each{ userdata ->
+            if (userdata.total > 0){
+                sanitizedOutput << userdata
+            }
+        }
         // Create JSON Object
         def list = []
         for (int i = 0; i < 5; i++){
             def jsonMap = [:]
-            outputPayload[i].eachWithIndex{ mapData, index ->
+            sortedPayload[i].eachWithIndex{ mapData, index ->
                 if (index == 0) {
                     jsonMap["username"] = mapData.value
                 } else {
@@ -170,7 +178,7 @@ class UserProvisioningHistoryReportProvider extends AbstractReportProvider {
         }
         def json = JsonOutput.toJson(list)
 
-        Map<String,Object> data = [months: monthPayload, users: usersPayload, output: outputPayload, userJson: json ]
+        Map<String,Object> data = [months: monthPayload, users: usersPayload, output: sanitizedOutput, userJson: json ]
         ReportResultRow resultRowRecord = new ReportResultRow(section: ReportResultRow.SECTION_MAIN, displayOrder: displayOrder++, dataMap: data)
         morpheus.report.appendResultRows(reportResult,[resultRowRecord]).blockingGet()
         morpheus.report.updateReportResultStatus(reportResult,ReportResult.Status.ready).blockingGet();
