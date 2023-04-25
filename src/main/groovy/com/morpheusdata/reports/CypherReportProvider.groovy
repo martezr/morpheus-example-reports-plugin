@@ -18,11 +18,11 @@ import io.reactivex.Observable;
 import java.sql.Connection
 
 @Slf4j
-class CustomReportProvider extends AbstractReportProvider {
+class CypherReportProvider extends AbstractReportProvider {
 	Plugin plugin
 	MorpheusContext morpheusContext
 
-	CustomReportProvider(Plugin plugin, MorpheusContext context) {
+	CypherReportProvider(Plugin plugin, MorpheusContext context) {
 		this.plugin = plugin
 		this.morpheusContext = context
 	}
@@ -39,7 +39,7 @@ class CustomReportProvider extends AbstractReportProvider {
 
 	@Override
 	String getCode() {
-		'custom-report-cypher'
+		'cypher-report'
 	}
 
 	@Override
@@ -56,7 +56,7 @@ class CustomReportProvider extends AbstractReportProvider {
 	HTMLResponse renderTemplate(ReportResult reportResult, Map<String, List<ReportResultRow>> reportRowsBySection) {
 		ViewModel<String> model = new ViewModel<String>()
 		model.object = reportRowsBySection
-		getRenderer().renderTemplate("hbs/customReport", model)
+		getRenderer().renderTemplate("hbs/cypherReport", model)
 	}
 
 	@Override

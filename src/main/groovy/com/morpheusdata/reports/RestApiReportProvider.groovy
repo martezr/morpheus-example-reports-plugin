@@ -77,14 +77,7 @@ class RestApiReportProvider extends AbstractReportProvider {
 		Long displayOrder = 0
 		List<GroovyRowResult> results = []
 
-        log.info("REPORT CONFIGMAP ${reportResult.configMap}")
-        log.info("User Info ${reportResult.createdBy.username}")
-        log.info("User Permissions ${reportResult.createdBy.permissions}")
-
-		log.info("Results: ${results}")
-
 	    def apiResults = reportAPI.callApi("https://jsonplaceholder.typicode.com", "posts", "", "", new RestApiUtil.RestOptions(headers:['Content-Type':'application/json'], ignoreSSL: false), 'GET')
-
 		JsonSlurper slurper = new JsonSlurper()
 		def json = slurper.parseText(apiResults.content)
 
