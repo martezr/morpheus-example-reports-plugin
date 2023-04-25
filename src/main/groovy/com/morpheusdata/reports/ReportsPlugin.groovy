@@ -12,13 +12,13 @@ class ReportsPlugin extends Plugin {
 
 	@Override
 	void initialize() {
-		this.setName("Custom Cypher Report")
-		this.setDescription("A custom report plugin for cypher items")
+		this.setName("Custom Report Examples")
+		this.setDescription("Example Morpheus custom reports")
 		this.setAuthor("Martez Reed")
 		this.setSourceCodeLocationUrl("https://github.com/martezr/morpheus-example-reports-plugin")
 		this.setIssueTrackerUrl("https://github.com/martezr/morpheus-example-reports-plugin/issues")
-		CustomReportProvider customReportProvider = new CustomReportProvider(this, morpheus)
-		this.pluginProviders.put(customReportProvider.code, customReportProvider)
+		CypherReportProvider cypherReportProvider = new CypherReportProvider(this, morpheus)
+		this.pluginProviders.put(cypherReportProvider.code, cypherReportProvider)
 		RestApiReportProvider restApiReportProvider = new RestApiReportProvider(this, morpheus)
 		this.pluginProviders.put(restApiReportProvider.code, restApiReportProvider)
 		UserProvisioningHistoryReportProvider userProvisioningHistoryReportProvider = new UserProvisioningHistoryReportProvider(this, morpheus)
@@ -34,7 +34,7 @@ class ReportsPlugin extends Plugin {
 	@Override
 	public List<Permission> getPermissions() {
 		// Define the available permissions for the report
-		Permission permission = new Permission('Custom Cypher Report', 'customCypherReport', [Permission.AccessType.none, Permission.AccessType.full])
+		Permission permission = new Permission('Custom Example Reports', 'customExampleReports', [Permission.AccessType.none, Permission.AccessType.full])
 		return [permission];
 	}
 }
