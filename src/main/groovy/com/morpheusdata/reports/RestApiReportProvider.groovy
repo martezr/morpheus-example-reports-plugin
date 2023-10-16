@@ -16,7 +16,7 @@ import groovy.sql.Sql
 import groovy.util.logging.Slf4j
 import io.reactivex.Observable;
 import java.sql.Connection
-import com.morpheusdata.core.util.RestApiUtil
+import com.morpheusdata.core.util.HttpApiClient
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
@@ -25,12 +25,12 @@ import groovy.json.JsonSlurper
 class RestApiReportProvider extends AbstractReportProvider {
 	Plugin plugin
 	MorpheusContext morpheusContext
-	RestApiUtil reportAPI
+	HttpApiClient reportAPI
 
 	RestApiReportProvider(Plugin plugin, MorpheusContext context) {
 		this.plugin = plugin
 		this.morpheusContext = context
-        this.reportAPI = new RestApiUtil()
+        	this.reportAPI = new HttpApiClient()
 	}
 
 	@Override
@@ -77,7 +77,7 @@ class RestApiReportProvider extends AbstractReportProvider {
 		Long displayOrder = 0
 		List<GroovyRowResult> results = []
 
-	    def apiResults = reportAPI.callApi("https://jsonplaceholder.typicode.com", "posts", "", "", new RestApiUtil.RestOptions(headers:['Content-Type':'application/json'], ignoreSSL: false), 'GET')
+	    def apiResults = reportAPI.callJsonApi("https://jsonplaceholder.typicode.com", "posts", "", "", new HttpApiClient.RequestOptions(headers:['Content-Type':'application/json'], ignoreSSL: false), 'GET')
 		JsonSlurper slurper = new JsonSlurper()
 		def json = slurper.parseText(apiResults.content)
 
