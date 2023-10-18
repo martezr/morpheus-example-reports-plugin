@@ -88,6 +88,7 @@ class RestApiReportProvider extends AbstractReportProvider {
             morpheus.report.appendResultRows(reportResult,[resultRowRecord]).blockingGet()
         }
         morpheus.report.updateReportResultStatus(reportResult,ReportResult.Status.ready).blockingGet();
+		reportAPI.shutdownClient()
 	}
 
 	// https://developer.morpheusdata.com/api/com/morpheusdata/core/ReportProvider.html#method.summary
