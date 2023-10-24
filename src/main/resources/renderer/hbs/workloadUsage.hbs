@@ -157,24 +157,58 @@
   <h2>Tenants</h2>
 
   {{#each reportdata.header.0.dataMap.serverPayload}}
-    <div class="resource-detail zone-summary">
-        <div class="summary-collapsible-row" style="margin-bottom: 0px; padding: 0px;">
-          <div collapsible="" class="detail-title summary-title-row collapsed">
-              <div class="name-block">
-                <span class="name">{{this.name}}</span>
+      <div class="resource-detail zone-summary">
+    <div class="summary-collapsible-row" style="margin-bottom: 0px; padding: 0px;">
+      <div collapsible class="detail-title summary-title-row collapsed">
+          <div class="name-block">
+            <span class="name">{{this.name}}</span>
+          </div>
+          <div class="stats-block">
+              <div class="stat-container-wide">
+                {{this.allocated_cpu}} Cores
+                <div class="stat-label">CPU</div>
               </div>
-      <div class="stats-block">
-          <div class="stat-container-wide">
-            {{this.count}}
-            <div class="stat-label">Workloads</div>
-          </div>
-        </div>
-          </div>
-          <div class="summary-content-row">
-              <div class="zone-summary-container">
+              <div class="stat-container-wide">
+                {{this.allocated_memory}} Gb
+                <div class="stat-label">Memory</div>
+              </div>
+              <div class="stat-container-wide">
+                {{this.allocated_storage}} Gb
+                <div class="stat-label">Storage</div>
+              </div>
+              <div class="stat-container-wide">
+                {{this.count}}
+                <div class="stat-label">Workloads</div>
               </div>
           </div>
-        </div>
+      </div>
+      <div class="host-list">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Cloud</th>
+                    <th>Cores</th>
+                    <th>Memory</th>
+                    <th>Storage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {{#each this.workloads}}
+
+                    <tr>
+                      <td>{{name}}</td>
+                      <td>{{cloud}}</td>
+                      <td>{{max_cores}}</td>
+                      <td>{{max_memory}}</td>
+                      <td>{{max_storage}}</td>
+                    </tr>
+                  {{/each}}
+
+                </tbody>
+              </table>
+      </div>
+    </div>
     </div>
   {{/each}}
   </div>

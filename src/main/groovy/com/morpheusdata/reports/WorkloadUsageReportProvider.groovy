@@ -101,51 +101,71 @@ class WorkloadUsageReportProvider extends AbstractReportProvider {
 			// Create a read-only database connection
 			dbConnection = morpheus.report.getReadOnlyDatabaseConnection().blockingGet()
 			// Evaluate if a search filter or phrase has been defined
-			results = new Sql(dbConnection).rows("SELECT compute_server.id,compute_server.name,compute_server.provision,compute_server.status,compute_server.server_type,compute_server.zone_id,compute_server.managed,compute_server.server_type,compute_server.status,compute_server.discovered,compute_server.account_id,compute_server.power_state,compute_server_type.name as server_type_name, compute_zone.name as cloud_name, account.name as account_name FROM compute_server LEFT JOIN account ON compute_server.account_id = account.id LEFT JOIN compute_zone on compute_server.zone_id = compute_zone.id INNER JOIN compute_server_type ON compute_server.compute_server_type_id=compute_server_type.id WHERE compute_server.compute_server_type_id in (select id from compute_server_type where managed = 0 and container_hypervisor = 0 and vm_hypervisor = 0 ) order by id asc;")
-			instances = new Sql(dbConnection).rows("SELECT instance.id, instance.name, compute_zone.name as cloud_name, account.name as account_name FROM instance LEFT JOIN compute_zone on instance.provision_zone_id = compute_zone.id LEFT JOIN account ON instance.account_id = account.id order by id asc;")
+			results = new Sql(dbConnection).rows("SELECT compute_server.id,compute_server.name,compute_server.max_cores,compute_server.max_memory,compute_server.max_storage,compute_server.provision,compute_server.status,compute_server.server_type,compute_server.zone_id,compute_server.managed,compute_server.server_type,compute_server.status,compute_server.discovered,compute_server.account_id,compute_server.power_state,compute_server_type.name as server_type_name, compute_zone.name as cloud_name, account.name as account_name FROM compute_server LEFT JOIN account ON compute_server.account_id = account.id LEFT JOIN compute_zone on compute_server.zone_id = compute_zone.id INNER JOIN compute_server_type ON compute_server.compute_server_type_id=compute_server_type.id WHERE compute_server.compute_server_type_id in (select id from compute_server_type where managed = 0 and container_hypervisor = 0 and vm_hypervisor = 0 ) order by id asc;")
+			instances = new Sql(dbConnection).rows("SELECT instance.id, instance.name, instance.max_cores, instance.max_memory, instance.max_storage, compute_zone.name as cloud_name, account.name as account_name FROM instance LEFT JOIN compute_zone on instance.provision_zone_id = compute_zone.id LEFT JOIN account ON instance.account_id = account.id order by id asc;")
 			accounts = new Sql(dbConnection).rows("SELECT name from account order by id asc;")
 			clouds = new Sql(dbConnection).rows("SELECT name from compute_zone order by id asc;")
 
-/*
-{
-	[
-		"name": "tenantA",
-		"workloadCount": 34,
-		"workloads": [
-			{"name":"demo","cpu":"test"},
-			{"name":"demo","cpu":"test"}
-		]
-	]
-}
-*/
+			// Iterate through each tenant and create a data payload for each one
+			/*
+			{
+				[
+					"name": "tenantA",
+					"count": 34,
+					"workloads": [
+						{"name":"demo","cpu":"test"},
+						{"name":"demo","cpu":"test"}
+					]
+				]
+			}
+			*/
 			accounts.each {
 				def payload = [:]
 				payload["name"] = it.name
 				payload["count"] = 0
+				payload["allocated_cpu"] = 0
+				payload["allocated_memory"] = 0
+				payload["allocated_storage"] = 0
 				payload["workloads"] = []
 				accountpayload << payload
 			}
+			// Iterate through each cloud and create a data payload for each one
+			/*
+			{
+				[
+					"name": "demo cloud",
+					"count": 34
+				]
+			}
+			*/
 			clouds.each {
 				def payload = [:]
 				payload["name"] = it.name
 				payload["count"] = 0
 				cloudpayload << payload
 			}
-	    // Close the database connection
 		} finally {
+		    // Close the database connection
 			morpheus.report.releaseDatabaseConnection(dbConnection)
 		}
 		Observable<GroovyRowResult> observable = Observable.fromIterable(results) as Observable<GroovyRowResult>
 		observable.map{ resultRow ->
 			Map<String,Object> data = [id: resultRow.id, name: resultRow.name, cloud_id: resultRow.zone_id, cloud_name: resultRow.cloud_name, account_name: resultRow.account_name, discovered: resultRow.discovered, type: resultRow.server_type_name, server_type: resultRow.server_type ]
-			
 			ReportResultRow resultRowRecord = new ReportResultRow(section: ReportResultRow.SECTION_MAIN, displayOrder: displayOrder++, dataMap: data)
+			// Iterate through each account and match the current server to the account
+			// and add the appropriate data.
 			accountpayload.each {
 				if (it.name == resultRow.account_name) {
 					def payload = [:]
 					payload["name"] = resultRow.name
 					payload["cloud"] = resultRow.cloud_name
 					payload["discovered"] = resultRow.discovered
+					payload["max_cores"] = resultRow.max_cores
+					payload["max_memory"] = resultRow.max_memory / (1024 * 1024 * 1024)
+					payload["max_storage"] = Math.round(resultRow.max_storage / (1024 * 1024 * 1024))
+					it.allocated_cpu = it.allocated_cpu + resultRow.max_cores
+					it.allocated_memory = it.allocated_memory + resultRow.max_memory
+					it.allocated_storage = it.allocated_storage + resultRow.max_storage
 					it.workloads << payload
 					it.count++
 				}
@@ -155,6 +175,7 @@ class WorkloadUsageReportProvider extends AbstractReportProvider {
 					it.count = it.count + 1
 				}
 			}
+			// Increment the total number of workloads
 			totalWorkloads++
 			switch(resultRow.discovered) {
 				case false:
@@ -177,6 +198,16 @@ class WorkloadUsageReportProvider extends AbstractReportProvider {
 			accountpayload.each { account ->
 				if (instance.account_name == account.name){
 					account.count++
+					def payload = [:]
+					payload["name"] = instance.name
+					payload["cloud"] = instance.cloud_name
+					payload["max_cores"] = instance.max_cores
+					payload["max_memory"] = instance.max_memory / (1024 * 1024 * 1024)
+					payload["max_storage"] = Math.round(instance.max_storage / (1024 * 1024 * 1024))
+					account.allocated_cpu = account.allocated_cpu + instance.max_cores
+					account.allocated_memory = account.allocated_memory + instance.max_memory
+					account.allocated_storage = account.allocated_storage + instance.max_storage
+					account.workloads << payload
 				}
 			}
 			cloudpayload.each { cloud ->
@@ -186,6 +217,10 @@ class WorkloadUsageReportProvider extends AbstractReportProvider {
 			}
 		}
 
+		accountpayload.each { account ->
+			account.allocated_memory = account.allocated_memory / (1024 * 1024 * 1024)
+			account.allocated_storage = Math.round(account.allocated_storage / (1024 * 1024 * 1024))
+		}
 		def list = []
 		def discoveredOutput = [name: "discovered", value: discoveredWorkloads, color: "#3366cc"]
 		list << discoveredOutput
